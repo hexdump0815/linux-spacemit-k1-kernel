@@ -1,0 +1,55 @@
+# directories:
+# - /compile/doc/bpi - the files in this dir
+# - /compile/source/linux-bpi-bf3 - the kernel sources checked out from gitrepo
+# - /compile/result/bpi - the resulting kernel, modules etc. tar.gz files
+# - /compile/doc/kernel-config-options - https://github.com/hexdump0815/kernel-config-options
+# - /compile/doc/kernel-extra-patches - https://github.com/hexdump0815/kernel-extra-patches
+# name: bf3-001 - kernel for banana pi f3 based on the legacy k1 v6.1 kernel sources
+
+# info: this is based on commit ad8dc1c1ef3eb52a6b1bad64ee570e51b04fff10
+#       of the legacy k1 v6.1 kernel sources kernel tree from 
+#       https://github.com/BPI-SINOVOIP/pi-linux (branch linux-6.1.15-k1)
+
+cd /compile/source/linux-bpi-bf3
+
+# patches
+# none yet
+
+export TREE_VERSION=001
+export ARCH=riscv
+# lets start with the armbian image kernel config and adjust options from there
+scripts/kconfig/merge_config.sh -m /compile/doc/bpi/misc.bf3/misc/config-6.1.15-legacy-k1 /compile/doc/kernel-config-options/docker-options.cfg /compile/doc/kernel-config-options/options-to-remove-generic.cfg /compile/doc/bpi/misc.bf3/options/options-to-remove-special.cfg /compile/doc/kernel-config-options/additional-options-generic.cfg /compile/doc/kernel-config-options/additional-options-riscv.cfg /compile/doc/bpi/misc.bf3/options/additional-options-special.cfg
+( cd /compile/doc/kernel-config-options ; git rev-parse --verify HEAD ) > /compile/doc/bpi/misc.bf3/options/kernel-config-options.version
+make olddefconfig
+./scripts/config --set-str CONFIG_LOCALVERSION "-bf3-${TREE_VERSION}"
+make -j 4 Image dtbs modules
+cd tools/perf
+# without this it would fail on warnings
+export WERROR=0
+make
+cd ../power/cpupower
+make
+cd ../../..
+export kver=`make kernelrelease`
+echo ${kver}
+# remove debug info if there and not wanted
+#find . -type f -name '*.ko' | sudo xargs -n 1 objcopy --strip-unneeded
+make modules_install
+mkdir -p /lib/modules/${kver}/tools
+cp -v tools/perf/perf /lib/modules/${kver}/tools
+cp -v tools/power/cpupower/cpupower /lib/modules/${kver}/tools
+cp -v tools/power/cpupower/libcpupower.so.0.0.1 /lib/modules/${kver}/tools/libcpupower.so.0
+# make headers_install INSTALL_HDR_PATH=/usr
+mkdir -p /boot
+cp -v .config /boot/config-${kver}
+cp -v arch/riscv/boot/Image /boot/Image-${kver}
+mkdir -p /boot/dtb-${kver}
+cp -v arch/riscv/boot/dts/spacemit/*.dtb /boot/dtb-${kver}
+cp -v System.map /boot/System.map-${kver}
+cd /boot
+update-initramfs -c -k ${kver}
+tar cvzf /compile/source/linux-bpi-bf3/${kver}.tar.gz /boot/Image-${kver} /boot/System.map-${kver} /boot/config-${kver} /boot/dtb-${kver} /boot/initrd.img-${kver} /lib/modules/${kver}
+cp -v /compile/doc/bpi/config.bf3 /compile/doc/bpi/config.bf3.old
+cp -v /compile/source/linux-bpi-bf3/.config /compile/doc/bpi/config.bf3
+cp -v /compile/source/linux-bpi-bf3/.config /compile/doc/bpi/config.bf3-${kver}
+cp -v /compile/source/linux-bpi-bf3/*.tar.gz /compile/result/bpi

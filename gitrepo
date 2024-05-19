@@ -1,0 +1,4 @@
+origin  https://github.com/BPI-SINOVOIP/pi-linux.git (fetch)
+origin  https://github.com/BPI-SINOVOIP/pi-linux.git (push)
+
+branch: linux-6.1.15-k1
