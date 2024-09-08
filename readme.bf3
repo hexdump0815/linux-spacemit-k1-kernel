@@ -3,26 +3,35 @@
 # - /compile/source/linux-bpi-bf3 - the kernel sources checked out from gitrepo
 # - /compile/result/bpi - the resulting kernel, modules etc. tar.gz files
 # - /compile/doc/kernel-config-options - https://github.com/hexdump0815/kernel-config-options
-# - /compile/doc/kernel-extra-patches - https://github.com/hexdump0815/kernel-extra-patches
-# name: bf3-001 - kernel for banana pi f3 based on the legacy k1 v6.1 kernel sources
+# name: bf3-010 - kernel for banana pi f3 based on the legacy k1 v6.6 bianbu kernel sources
+#                 based on https://github.com/pyavitz/debian-image-builder
 
-# info: this is based on commit ad8dc1c1ef3eb52a6b1bad64ee570e51b04fff10
-#       of the legacy k1 v6.1 kernel sources kernel tree from 
-#       https://github.com/BPI-SINOVOIP/pi-linux (branch linux-6.1.15-k1)
+# info: this is based on commit 0d4d9465fd493597fd6ff70a7de9f4cba03e56bf
+#       of the legacy k1 v6.6 kernel sources kernel tree from 
+#       https://gitee.com/bianbu-linux/linux-6.6.git (branch bl-v2.0.y)
 
 cd /compile/source/linux-bpi-bf3
 
 # patches
-# none yet
+for i in /compile/doc/bpi/misc.bf3/patches/v6.6/*.patch; do
+  echo === $i
+  patch -p1 < $i
+done
 
-export TREE_VERSION=001
+# some extra firmware required for the kernel to be built
+mkdir firmware
+cp -v /compile/doc/bpi/misc.bf3/misc/firmware/spacemit/esos.elf firmware
+
+export TREE_VERSION=010
 export ARCH=riscv
-# lets start with the armbian image kernel config and adjust options from there
-scripts/kconfig/merge_config.sh -m /compile/doc/bpi/misc.bf3/misc/config-6.1.15-legacy-k1 /compile/doc/kernel-config-options/docker-options.cfg /compile/doc/kernel-config-options/options-to-remove-generic.cfg /compile/doc/bpi/misc.bf3/options/options-to-remove-special.cfg /compile/doc/kernel-config-options/additional-options-generic.cfg /compile/doc/kernel-config-options/additional-options-riscv.cfg /compile/doc/bpi/misc.bf3/options/additional-options-special.cfg
+# lets start with the legacy kernel config from
+# https://github.com/pyavitz/debian-image-builder/blob/feature/defconfig/k1_defconfig
+# and adjust options from there
+scripts/kconfig/merge_config.sh -m /compile/doc/bpi/misc.bf3/misc/config-v6.6-legacy-k1 /compile/doc/kernel-config-options/docker-options.cfg /compile/doc/kernel-config-options/options-to-remove-generic.cfg /compile/doc/bpi/misc.bf3/options/options-to-remove-special.cfg /compile/doc/kernel-config-options/additional-options-generic.cfg /compile/doc/kernel-config-options/additional-options-riscv.cfg /compile/doc/bpi/misc.bf3/options/additional-options-special.cfg
 ( cd /compile/doc/kernel-config-options ; git rev-parse --verify HEAD ) > /compile/doc/bpi/misc.bf3/options/kernel-config-options.version
 make olddefconfig
 ./scripts/config --set-str CONFIG_LOCALVERSION "-bf3-${TREE_VERSION}"
-make -j 4 Image dtbs modules
+make -j 8 Image dtbs modules
 cd tools/perf
 # without this it would fail on warnings
 export WERROR=0
