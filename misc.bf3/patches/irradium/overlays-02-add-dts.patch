@@ -1,0 +1,78 @@
+diff --git a/arch/riscv/boot/dts/spacemit/overlay/README.spacemit-overlays b/arch/riscv/boot/dts/spacemit/overlay/README.spacemit-overlays
+new file mode 100644
+index 000000000..78cf21291
+--- /dev/null
++++ b/arch/riscv/boot/dts/spacemit/overlay/README.spacemit-overlays
+@@ -0,0 +1,17 @@
++This document describes overlays provided in the kernel packages
++
++### Platform:
++
++spacemit
++
++### Provided overlays:
++
++for k1 (banana pi f3)
++
++- k1 k1-1.8ghz
++
++### Overlay details:
++
++###  k1@1.8ghz
++overlay enables (overclocked) operation at 1.8ghz
++1.8Ghz operation appears stable on the two boards I've tested.
+diff --git a/arch/riscv/boot/dts/spacemit/overlay/Makefile b/arch/riscv/boot/dts/spacemit/overlay/Makefile
+new file mode 100644
+index 000000000..04be8dd57
+--- /dev/null
++++ b/arch/riscv/boot/dts/spacemit/overlay/Makefile
+@@ -0,0 +1,13 @@
++# SPDX-License-Identifier: GPL-2.0
++dtbo-$(CONFIG_SOC_SPACEMIT_K1X) += \
++	k1@1.8ghz.dtbo
++
++scr-$(CONFIG_SOC_SPACEMIT_K1X) += \
++	spacemit-fixup.scr
++
++dtbotxt-$(CONFIG_SOC_SPACEMIT_K1X) += \
++	README.spacemit-overlays
++
++dtb-y += $(dtbo-y) $(scr-y) $(dtbotxt-y)
++
++clean-files    := *.dtbo *.scr
+diff --git a/arch/riscv/boot/dts/spacemit/overlay/k1@1.8ghz.dtso b/arch/riscv/boot/dts/spacemit/overlay/k1@1.8ghz.dtso
+new file mode 100644
+index 000000000..092d42fb8
+--- /dev/null
++++ b/arch/riscv/boot/dts/spacemit/overlay/k1@1.8ghz.dtso
+@@ -0,0 +1,20 @@
++/dts-v1/;
++/plugin/;
++
++/ {
++	fragment@0 {
++		target = <&clst_core_opp_table0>;
++		__overlay__ {
++			//the following are unsupported, overclocked operating points
++			opp1800000000 {
++				opp-hz = /bits/ 64 <1800000000>, /bits/ 64 <1800000000>;
++				tcm-hz = /bits/ 64 <900000000>;
++				ace-hz = /bits/ 64 <900000000>;
++				opp-microvolt = <1160000>;
++				clock-latency-ns = <200000>;
++				status = "okay";
++			};
++
++		};
++	};
++};
+diff --git a/arch/riscv/boot/dts/spacemit/overlay/spacemit-fixup.scr-cmd b/arch/riscv/boot/dts/spacemit/overlay/spacemit-fixup.scr-cmd
+new file mode 100644
+index 000000000..d4c39e20a
+--- /dev/null
++++ b/arch/riscv/boot/dts/spacemit/overlay/spacemit-fixup.scr-cmd
+@@ -0,0 +1,4 @@
++# overlays fixup script
++# implements (or rather substitutes) overlay arguments functionality
++# using u-boot scripting, environment variables and "fdt" command
++

@@ -8,6 +8,11 @@ origin	https://gitee.com/bianbu-linux/linux-6.6.git (fetch)
 origin	https://gitee.com/bianbu-linux/linux-6.6.git (push)
 branch: bl-v2.0.y
 
+v6.6 somewhat improved alternative on github as gitee clone seems to be complicated at times:
+origin: https://github.com/jmontleon/linux-bianbu (fetch)
+origin: https://github.com/jmontleon/linux-bianbu (push)
+branch: linux-6.6.y
+
 opensbi:
 origin	https://gitee.com/bianbu-linux/opensbi.git (fetch)
 origin	https://gitee.com/bianbu-linux/opensbi.git (push)

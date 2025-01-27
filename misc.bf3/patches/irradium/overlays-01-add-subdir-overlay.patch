@@ -1,0 +1,8 @@
+--- a/arch/riscv/boot/dts/spacemit/Makefile	2024-08-14 21:22:26.679938268 +0300
++++ b/arch/riscv/boot/dts/spacemit/Makefile	2024-08-14 21:23:16.784075182 +0300
+@@ -5,3 +5,5 @@ dtb-$(CONFIG_SOC_SPACEMIT_K1X) += k1-x_e
+ 				  k1-x_MUSE-Paper.dtb k1-x_MUSE-Paper-mini-4g.dtb \
+ 				  k1-bananapi-f3.dtb
+ obj-$(CONFIG_BUILTIN_DTB) += $(addsuffix .o, $(dtb-y))
++
++subdir-y       := overlay

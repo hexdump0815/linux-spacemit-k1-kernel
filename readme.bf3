@@ -6,9 +6,9 @@
 # name: bf3-010 - kernel for banana pi f3 based on the legacy k1 v6.6 bianbu kernel sources
 #                 based on https://github.com/pyavitz/debian-image-builder
 
-# info: this is based on commit 0d4d9465fd493597fd6ff70a7de9f4cba03e56bf
+# info: this is based on commit 7e410f0a014ea2f71ccd0ee38423ab1990d08c15
 #       of the legacy k1 v6.6 kernel sources kernel tree from 
-#       https://gitee.com/bianbu-linux/linux-6.6.git (branch bl-v2.0.y)
+#       https://github.com/jmontleon/linux-bianbu/ (branch: linux-6.6.y)
 
 cd /compile/source/linux-bpi-bf3
 
@@ -17,12 +17,16 @@ for i in /compile/doc/bpi/misc.bf3/patches/v6.6/*.patch; do
   echo === $i
   patch -p1 < $i
 done
+# enable the banana pi f3 dts
+patch -p1 < /compile/doc/bpi/misc.bf3/patches/irradium/general-add-support-banana-pi-f3-dts.patch
+# enable optional overclocking to 1.8ghz
+patch -p1 < /compile/doc/bpi/misc.bf3/patches/irradium/general-k1-max-cpufreq-1800000.patch
 
 # some extra firmware required for the kernel to be built
 mkdir firmware
 cp -v /compile/doc/bpi/misc.bf3/misc/firmware/spacemit/esos.elf firmware
 
-export TREE_VERSION=010
+export TREE_VERSION=020
 export ARCH=riscv
 # lets start with the legacy kernel config from
 # https://github.com/pyavitz/debian-image-builder/blob/feature/defconfig/k1_defconfig
